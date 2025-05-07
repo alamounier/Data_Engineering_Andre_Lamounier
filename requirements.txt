@@ -1,0 +1,6 @@
+pyspark==3.3.1
+pylance
+ipykernel
+numpy === 1.25.0
+pandas == 2.0.2
+minio

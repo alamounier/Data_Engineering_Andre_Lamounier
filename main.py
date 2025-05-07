@@ -1,11 +1,8 @@
 from etl_layers.layer_bronze import run_bronze_etl
+from etl_layers.layer_silver import run_silver_etl
 
 run_bronze_etl()
-
-
-
-
-
+run_silver_etl()
 
 
 # import os

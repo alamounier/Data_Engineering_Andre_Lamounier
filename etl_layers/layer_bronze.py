@@ -1,11 +1,9 @@
 import requests
 from datetime import datetime
-from pyspark.sql.types import StructType, StructField, StringType, DoubleType, TimestampType
-from pyspark.sql.functions import lit, to_timestamp, col
+from pyspark.sql.types import StructType, StructField, StringType, DoubleType
+from pyspark.sql.functions import lit, to_timestamp
 from etl_layers.utils import get_spark_session
 from etl_layers.paths import bronze_path
-from delta.tables import DeltaTable
-
 
 def run_bronze_etl():
     # 1. Extrai os dados da API paginada
@@ -19,12 +17,18 @@ def run_bronze_etl():
         if response.status_code != 200:
             print(f"Erro na página {page}: {response.status_code}")
             break
+
         page_data = response.json()
         if not page_data:
             break
+
         all_data.extend(page_data)
         print(f"Página {page} com {len(page_data)} registros coletada.")
         page += 1
+
+    if not all_data:
+        print("Nenhum dado extraído da API.")
+        return
 
     # 2. Inicializa sessão Spark
     spark = get_spark_session("BronzeETL")
@@ -49,40 +53,26 @@ def run_bronze_etl():
         StructField("street", StringType(), True)
     ])
 
-    # 4. Cria DataFrame
+    # 4. Valida se todos os campos esperados estão presentes
+    first_record_keys = set(all_data[0].keys())
+    expected_keys = set(schema.fieldNames())
+    if not expected_keys.issubset(first_record_keys):
+        raise ValueError("Mudança no schema da API detectada!")
+
+    # 5. Cria DataFrame
     df = spark.createDataFrame(all_data, schema=schema)
 
-    # 5. Adiciona timestamps
+    # 6. Adiciona timestamps
     now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     df = df.withColumn("line_created_at", to_timestamp(lit(now_str))) \
-        .withColumn("line_updated_at", to_timestamp(lit(now_str)))
+           .withColumn("line_updated_at", to_timestamp(lit(now_str)))
 
-    # 6. Cria/atualiza camada Bronze Delta com CDC
-    if DeltaTable.isDeltaTable(spark, bronze_path):
-        bronze_delta = DeltaTable.forPath(spark, bronze_path)
+    # 7. Grava no Delta com CDF habilitado
+    df.write.format("delta") \
+        .option("mergeSchema", "true") \
+        .option("delta.enableChangeDataFeed", "true") \
+        .mode("append") \
+        .save(bronze_path)
 
-        # Faz merge baseado no ID
-        # Se algum campo relevante tiver mudado, insere nova linha (append)
-        existing_df = bronze_delta.toDF()
-        updated_df = df.alias("new")
-
-        # Join para encontrar diferenças
-        join_condition = "existing.id = new.id"
-        changes_df = updated_df.join(
-            existing_df.alias("existing"), on="id", how="left_outer"
-        ).filter(
-            (col("existing.id").isNull()) |  # novo ID
-            (col("new.name") != col("existing.name")) |
-            (col("new.city") != col("existing.city")) |
-            (col("new.postal_code") != col("existing.postal_code"))
-            # adicione mais comparações se necessário
-        ).select("new.*")
-
-        if changes_df.count() > 0:
-            changes_df.write.format("delta").mode("append").save(bronze_path)
-            print(f"Novos dados inseridos via CDC em: {bronze_path}")
-        else:
-            print("Nenhuma alteração detectada.")
-    else:
-        df.write.format("delta").mode("overwrite").save(bronze_path)
-        print(f"Camada Bronze inicial criada em: {bronze_path}")
+    print(f"✅ Dados gravados com CDF em: {bronze_path}")
+    spark.stop()

@@ -1,2 +1,6 @@
 venv/
 jars/
+logs/
+Airflow/logs/
+Airflow/config/
+Airflow/plugins/

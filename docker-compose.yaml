@@ -26,9 +26,43 @@ services:
     networks:
       - sparknet
 
+  airflow-webserver:
+    image: apache/airflow:2.9.1-python3.9
+    container_name: airflow-webserver
+    restart: always
+    depends_on:
+      - airflow-scheduler
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=sqlite:////opt/airflow/airflow.db
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - airflow-data:/opt/airflow
+    ports:
+      - "8080:8080"
+    command: webserver
+    networks:
+      - sparknet
+
+  airflow-scheduler:
+    image: apache/airflow:2.9.1-python3.9
+    container_name: airflow-scheduler
+    restart: always
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=sqlite:////opt/airflow/airflow.db
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - airflow-data:/opt/airflow
+    command: scheduler
+    networks:
+      - sparknet
+
 volumes:
   minio-data:
-
+  airflow-data:
+  
 networks:
   sparknet:
     driver: bridge

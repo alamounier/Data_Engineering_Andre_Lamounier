@@ -1,8 +1,10 @@
 from etl_layers.layer_bronze import run_bronze_etl
 from etl_layers.layer_silver import run_silver_etl
+from etl_layers.layer_gold import run_gold_etl
 
 run_bronze_etl()
 run_silver_etl()
+run_gold_etl()
 
 
 # import os

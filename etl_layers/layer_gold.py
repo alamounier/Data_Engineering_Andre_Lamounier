@@ -1,17 +1,23 @@
+from pyspark.sql.functions import count
 from etl_layers.utils import get_spark_session
 from etl_layers.paths import silver_path, gold_path
-from pyspark.sql.functions import count
 
-def run_gold():
-    spark = get_spark_session("GoldLayer")
+def run_gold_etl():
+    spark = get_spark_session("GoldETL")
 
     # Lê os dados da camada Silver
-    df_silver = spark.read.parquet(silver_path)
+    df_silver = spark.read.format("delta").load(silver_path)
 
-    # Agregação: quantidade de cervejarias por tipo e localidade
-    df_gold = df_silver.groupBy("brewery_type", "country", "state", "city") \
-        .agg(count("*").alias("brewery_count"))
+    # Agrega: quantidade de cervejarias por tipo e localização
+    df_gold = df_silver.groupBy("country", "state", "city", "brewery_type") \
+                       .agg(count("*").alias("brewery_count"))
 
-    df_gold.write.mode("overwrite").parquet(gold_path)
+    # Grava como Delta na camada Gold particionando por localização
+    df_gold.write.format("delta") \
+           .mode("overwrite") \
+           .partitionBy("country", "state", "city") \
+           .save(gold_path)
+
+    print("✅ Gold Layer atualizada com agregações por tipo e local.")
 
     spark.stop()

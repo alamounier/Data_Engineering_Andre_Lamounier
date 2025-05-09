@@ -10,7 +10,7 @@ Este projeto implementa um pipeline de ETL utilizando Apache Airflow, PySpark, D
 
 ## 🔧 Pré Requisitos
 
-- **Docker instalado** 
+- **Docker instalado na máquina local** 
 
 ---
 
@@ -40,25 +40,14 @@ A arquitetura é dividida em três camadas:
 
 ## 📁 Como executar
 
-1. Suba os serviços com Docker Compose
-Execute o seguinte comando na raiz do projeto (onde está localizado o docker-compose.yml):
+Siga os passos abaixo para rodar este projeto:
 
-- docker-compose up -d
+1. Copie o diretório do projeto para uma pasta local em seu computador.
 
-2. Acesse a interface do Airflow
-Abra seu navegador e vá para: http://localhost:8080
-Use as credenciais padrão:
+2. Abra o terminal do seu computador e mova até o diretório do projeto.
 
-- Usuário: airflow
-- Senha: airflow
+3. Entra na pasta src/jars e baixa o conector do pypsark no seguinte link https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.11.1026/aws-java-sdk-bundle-1.11.1026.jar e salve nesta mesma pasta, retorne a pasta do projeto raiz novamente pelo terminal.
 
-3. Ative e execute a DAG
-Na interface do Airflow:
+4. Crie a imagem do container do PySpark executando o seguinte comando: `docker build -t pyspark_image .`
 
-- Localize a DAG chamada brewery_etl_dag.
-- Habilite a DAG clicando no botão "On/Off".
-- Em seguida, clique em Trigger DAG (botão de play) para iniciar o pipeline.
-
-4. Monitore as execuções
-Acompanhe o progresso e visualize os logs diretamente na interface do Airflow, clicando em cada task da DAG.
-Os resultados processados serão salvos na pasta src/outputs.
+5. Navegue até a pasta do Airflow no terminal, aguarde a execução do container do PySpark e, em seguida, crie o container do Airflow com o seguinte comando: `docker-compose up -d`

@@ -2,7 +2,9 @@
 
 Este projeto implementa um pipeline de ETL utilizando Apache Airflow, PySpark, Docker e Delta Lake, estruturado em uma arquitetura de dados em camadas (Bronze, Silver e Gold). O objetivo é orquestrar o processamento de dados da API Open Brewery em contêineres separados para cada etapa do pipeline.
 
-<img src="/imgs_png/arquitetura_projeto.png" alt="python" height="300" /> 
+<div align="center">
+  <img src="/imgs_png/arquitetura_projeto.png" alt="python" height="200">
+</div>
 
 ---
 

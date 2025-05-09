@@ -50,8 +50,8 @@ Siga os passos abaixo para rodar este projeto:
 4. Acesse a pasta Airflow/dags/ e abra o arquivo brewery_etl_dag.py. 
     Em seguida, altere todas os parâmetros Mount das taks 
     
-    De: source=r"C:\Users\andre-lamounier\Desktop\airflow-docker\meu-projeto\src\outputs"
-    Para: r"<caminho da sua pasta outputs>"
+    - De: source=r"C:\Users\andre-lamounier\Desktop\airflow-docker\meu-projeto\src\outputs"
+    - Para: r"<caminho da sua pasta outputs>"
     
     **Observação:** Se você utilizar a barra invertida \ no caminho do arquivo, adicione o r antes da string com o caminho. Caso utilize a barra normal /, basta remover o r.
 

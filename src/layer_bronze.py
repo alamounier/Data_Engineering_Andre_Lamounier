@@ -26,7 +26,7 @@ def run_bronze_etl():
 
     # Etapa 3: Extração paginada de dados da API
     logging.info("Iniciando extração da API paginada.")
-    while page < 10:
+    while True:
         logging.info(f"Requisitando página {page}...")
         response = requests.get(base_url, params={"page": page, "per_page": per_page})
         if response.status_code != 200:

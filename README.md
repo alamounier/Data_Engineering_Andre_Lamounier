@@ -1,6 +1,6 @@
-# 🏗️ Projeto de ETL com Airflow, Docker, Delta Lake e Arquitetura Medalhão
+# 🏗️ ETL Project with Airflow, Docker, Delta Lake, and Medallion Architecture
 
-Este projeto implementa um pipeline de ETL utilizando Apache Airflow, PySpark, Docker e Delta Lake, estruturado em uma arquitetura de dados em camadas (Bronze, Silver e Gold). O objetivo é orquestrar o processamento de dados da API Open Brewery em contêineres separados para cada etapa do pipeline.
+This project implements an ETL pipeline using Apache Airflow, PySpark, Docker, and Delta Lake, structured within a layered data architecture (Bronze, Silver, and Gold). The goal is to orchestrate the processing of data from the Open Brewery API in separate containers for each pipeline stage.
 
 <div align="center">
   <img src="/imgs_png/arquitetura_projeto.png" alt="python" height="200">
@@ -8,82 +8,87 @@ Este projeto implementa um pipeline de ETL utilizando Apache Airflow, PySpark, D
 
 ---
 
-## 🔧 Pré Requisitos
+## 🔧 Prerequisites
 
-- **Docker instalado na máquina local**  
-- 👉 [Download do JAR aws-java-sdk-bundle](https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.11.1026/aws-java-sdk-bundle-1.11.1026.jar) — salve o arquivo na pasta `src/jars`
+- **Docker installed on your local machine**  
+- 👉 [Download the JAR aws-java-sdk-bundle](https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.11.1026/aws-java-sdk-bundle-1.11.1026.jar) — save the file in the `src/jars` folder
 
 ---
 
-## 🔧 Tecnologias Utilizadas
+## 🔧 Technologies Used
 
-- **Apache Airflow** (orquestração de workflows)
-- **Apache Spark com Delta Lake** (processamento de dados com transações ACID)
-- **Docker** (ambiente isolado para cada etapa de processamento)
-- **Docker Compose** (gerenciamento de múltiplos serviços)
+- **Apache Airflow** (workflow orchestration)
+- **Apache Spark with Delta Lake** (data processing with ACID transactions)
+- **Docker** (isolated environment for each processing stage)
+- **Docker Compose** (management of multiple services)
 - **Python 3**
 
 ---
 
-## 🧱 Arquitetura Medalhão
+## 🧱 Medallion Architecture
 
-A arquitetura é dividida em três camadas:
+The architecture is divided into three layers:
 
-- **Bronze**: coleta dados crus da API Open Brewery.
-- **Silver**: limpa, transforma e particiona os dados por localização.
-- **Gold**: agrega dados para análises, como a contagem de cervejarias por tipo e localidade.
+- **Bronze**: collects raw data from the Open Brewery API.
+- **Silver**: cleans, transforms, and partitions the data by location.
+- **Gold**: aggregates data for analysis, such as the count of breweries by type and location.
 
 ---
 
-## 📁 Estrutura do Projeto
+## 📁 Project Structure
 
 <img src="/imgs_png/estrutura_projeto.png" alt="python" height="300" /> 
 
-## ⚙️ Como executar
-Siga os passos abaixo para rodar este projeto:
+## ⚙️ How to Run
 
-1. Copie o diretório do projeto para uma pasta local em seu computador.
+Follow the steps below to run this project:
 
-2. Garanta que o arquivo `aws-java-sdk-bundle-1.11.1026.jar` esteja na pasta src/jars.
+1. Copy the project directory to a local folder on your computer.
 
-3. Abra o terminal e navegue até o diretório do projeto.
+2. Ensure the file `aws-java-sdk-bundle-1.11.1026.jar` is located in the `src/jars` folder.
 
-4. No diretório do projeto, crie a imagem do container do PySpark executando o seguinte comando: `docker build -t pyspark_image .`
+3. Open the terminal and navigate to the project directory.
 
-5. Aguarde a execução do passo 4 e em seguida navegue até a pasta Airflow/dags/ e abra o arquivo brewery_etl_dag.py e altere todas os "sources" dos parâmetros Mount das taks, conforme abaixo:
+4. In the project directory, build the PySpark container image by running the following command: `docker build -t pyspark_image .`
+
+5. After step 4 completes, navigate to the `Airflow/dags/` folder and open the `brewery_etl_dag.py` file. Modify the "sources" for the task mount parameters as follows:
     
-    - De: source=r"C:\Users\andre-lamounier\Desktop\airflow-docker\meu-projeto\src\outputs"
-    - Para: source=r"[caminho da sua pasta outputs]"
+    - From: source=r"C:\Users\andre-lamounier\Desktop\airflow-docker\meu-projeto\src\outputs"
+    - To: source=r"[path to your outputs folder]"
     
-    **Observação:** Se você utilizar a barra invertida \ no caminho do arquivo, adicione o r antes da string com o caminho. Caso utilize a barra normal /, basta remover o r.
+    **Note:** If you use the backslash \ in the file path, prepend the string with `r`. If you use the forward slash /, simply remove the `r`.
 
-6. Agora, acesse a pasta Airflow no terminal e, em seguida, crie o container do Airflow com o seguinte comando: `docker-compose up -d`
+6. Now, access the `Airflow` folder in the terminal and create the Airflow container with the following command: `docker-compose up -d`
 
+---
 
-## 🧠 Lógica
+## 🧠 Logic
 
-O objetivo deste pipeline é aproveitar as vantagens da engine Delta e da arquitetura Medalhão para garantir um processamento eficiente, mantendo o controle sobre o histórico de dados e a versão mais recente para análises.
+The objective of this pipeline is to leverage the Delta engine and Medallion architecture to ensure efficient processing while maintaining control over the data history and the most recent version for analysis.
 
-Camada Bronze: Armazena os dados brutos provenientes das fontes, mantendo todas as versões dos registros. Utilizando o Change Data Feed (CDF), é possível rastrear qualquer alteração nos dados ao longo do tempo. Isso oferece um histórico completo de todas as mudanças feitas nos dados de entrada.
+- **Bronze Layer**: Stores raw data from the sources, keeping all versions of the records. By using the Change Data Feed (CDF), any changes to the data over time can be tracked. This provides a complete history of all modifications made to the input data.
 
-Camada Silver: A partir dessa camada, o pipeline processa e transforma os dados para um formato mais adequado para análise. A tabela da camada Silver será sobrescrita a cada execução, garantindo que apenas a versão mais recente dos dados seja mantida, o que economiza recursos de processamento. Não há necessidade de armazenar o histórico completo das alterações, já que a camada Bronze já preserva essa informação.
+- **Silver Layer**: In this layer, the pipeline processes and transforms the data into a more analysis-friendly format. The Silver layer table will be overwritten with each execution, ensuring that only the latest version of the data is retained, thus saving processing resources. There is no need to store the complete history of changes, as the Bronze layer already preserves this information.
 
-Camada Gold: A camada Gold será a tabela da camada silver em formato agregado, ideal para construção de dashboards e relatórios para área de negócios.
+- **Gold Layer**: The Gold layer will represent the aggregated table from the Silver layer, ideal for building dashboards and reports for the business area.
 
-Vantagem do Versionamento: Caso seja necessário recuperar versões anteriores dos dados ou realizar auditoria, a camada Bronze com versionamento via Delta oferece essa flexibilidade. A camada Silver foca apenas na versão mais atual, o que facilita a análise e melhora a performance.
+**Versioning Advantage**: If there is a need to recover previous versions of the data or perform auditing, the Bronze layer, with Delta versioning, offers this flexibility. The Silver layer focuses only on the latest version, which makes analysis easier and enhances performance.
 
-Esse modelo de arquitetura permite um equilíbrio entre o controle total do histórico (na camada Bronze) e a eficiência de processamento (na camada Silver), otimizando recursos e mantendo a flexibilidade para futuros ajustes ou auditorias.
+This architectural model strikes a balance between full history control (in the Bronze layer) and processing efficiency (in the Silver layer), optimizing resources while maintaining flexibility for future adjustments or audits.
 
-## ⚙️ Orquestração com Airflow
+---
 
-- Cada DockerOperator executa um script Python específico de uma camada do pipeline dentro de um contêiner Docker baseado na imagem pyspark_image.
-- Os dados intermediários são persistidos na pasta outputs, que é montada em todos os contêineres por meio do parâmetro mounts.
-- As tarefas são executadas em sequência: bronze_task → silver_task → gold_task.
-- O uso do docker-socket-proxy permite que o Airflow controle os contêineres Docker de maneira segura mesmo dentro de outro contêiner.
+## ⚙️ Orchestration with Airflow
 
+- Each `DockerOperator` runs a specific Python script for a given pipeline layer inside a Docker container based on the `pyspark_image`.
+- Intermediate data is persisted in the `outputs` folder, which is mounted across all containers via the `mounts` parameter.
+- Tasks are executed in sequence: `bronze_task → silver_task → gold_task`.
+- The use of `docker-socket-proxy` allows Airflow to securely control Docker containers even within another container.
 
-## 📌 Resultados
+---
 
-Abaixo seguem algumas análises sobre a camada Gold:
+## 📌 Results
 
-<img src="/imgs_png/resultados.png" alt="python" height="500" /> 
+Below are some analyses on the Gold layer:
+
+<img src="/imgs_png/resultados.png" alt="python" height="400" /> 

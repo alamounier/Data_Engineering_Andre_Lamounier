@@ -11,7 +11,9 @@ Este projeto implementa um pipeline de ETL utilizando Apache Airflow, PySpark, D
 ## 🔧 Pré Requisitos
 
 - **Docker instalado na máquina local** 
+- **Download jar aws-java-sdk-bundle-1.11.1026.jar**
 
+Link para download jar: https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.11.1026/aws-java-sdk-bundle-1.11.1026.jar
 ---
 
 ## 🔧 Tecnologias Utilizadas
@@ -45,7 +47,7 @@ Siga os passos abaixo para rodar este projeto:
 
 2. Abra o terminal e navegue até o diretório do projeto.
 
-3. Acesse a pasta src/jars, baixe o conector do PySpark no seguinte link: aws-java-sdk-bundle-1.11.1026.jar, e salve o arquivo nessa mesma pasta. Depois, retorne à pasta raiz do projeto no terminal.
+3. Acesse a pasta src/jars e salve o jar aws-java-sdk-bundle-1.11.1026.jar. Depois, retorne à pasta raiz do projeto no terminal.
 
 4. Crie a imagem do container do PySpark executando o seguinte comando: **docker build -t pyspark_image .**
 

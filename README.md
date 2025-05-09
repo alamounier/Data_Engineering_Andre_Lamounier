@@ -80,3 +80,10 @@ Esse modelo de arquitetura permite um equilíbrio entre o controle total do hist
 - Os dados intermediários são persistidos na pasta outputs, que é montada em todos os contêineres por meio do parâmetro mounts.
 - As tarefas são executadas em sequência: bronze_task → silver_task → gold_task.
 - O uso do docker-socket-proxy permite que o Airflow controle os contêineres Docker de maneira segura mesmo dentro de outro contêiner.
+
+
+## 📌 Resultados
+
+Abaixo seguem algumas análises sobre a camada Gold:
+
+<img src="/imgs_png/resultados.png" alt="python" height="500" /> 

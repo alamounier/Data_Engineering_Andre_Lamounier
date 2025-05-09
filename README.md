@@ -74,4 +74,9 @@ Vantagem do Versionamento: Caso seja necessário recuperar versões anteriores d
 
 Esse modelo de arquitetura permite um equilíbrio entre o controle total do histórico (na camada Bronze) e a eficiência de processamento (na camada Silver), otimizando recursos e mantendo a flexibilidade para futuros ajustes ou auditorias.
 
+# ⚙️ Orquestração com Airflow
 
+- Cada DockerOperator executa um script Python específico de uma camada do pipeline dentro de um contêiner Docker baseado na imagem pyspark_image.
+- Os dados intermediários são persistidos na pasta outputs, que é montada em todos os contêineres por meio do parâmetro mounts.
+- As tarefas são executadas em sequência: bronze_task → silver_task → gold_task.
+- O uso do docker-socket-proxy permite que o Airflow controle os contêineres Docker de maneira segura mesmo dentro de outro contêiner.

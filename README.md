@@ -38,19 +38,20 @@ A arquitetura é dividida em três camadas:
 
 <img src="/imgs_png/estrutura_projeto.png" alt="python" height="300" /> 
 
-## (colocar engrenagem) Como executar
-
+## ⚙️ Como executar
 Siga os passos abaixo para rodar este projeto:
 
 1. Copie o diretório do projeto para uma pasta local em seu computador.
 
-2. Abra o terminal do seu computador e mova até o diretório do projeto.
+2. Abra o terminal e navegue até o diretório do projeto.
 
-3. Entra na pasta src/jars e baixa o conector do pypsark no seguinte link https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.11.1026/aws-java-sdk-bundle-1.11.1026.jar e salve nesta mesma pasta, retorne a pasta do projeto raiz novamente pelo terminal.
+3. Acesse a pasta src/jars, baixe o conector do PySpark no seguinte link: aws-java-sdk-bundle-1.11.1026.jar, e salve o arquivo nessa mesma pasta. Depois, retorne à pasta raiz do projeto no terminal.
 
-4. Crie a imagem do container do PySpark executando o seguinte comando: `docker build -t pyspark_image .`
+4. Crie a imagem do container do PySpark executando o seguinte comando: docker build -t pyspark_image .
 
-5. Navegue até a pasta do Airflow no terminal, aguarde a execução do container do PySpark e, em seguida, crie o container do Airflow com o seguinte comando: `docker-compose up -d`
+5. Navegue até a pasta do Airflow no terminal, aguarde a execução do container do PySpark e, em seguida, crie o container do Airflow com o seguinte comando: docker-compose up -d
+
+
 
 
 ## 🧠 Lógica

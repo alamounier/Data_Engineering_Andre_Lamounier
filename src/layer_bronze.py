@@ -1,12 +1,15 @@
 import requests
 from datetime import datetime
 from pyspark.sql.types import StructType, StructField, StringType, DoubleType
-from pyspark.sql.functions import lit, to_timestamp
 from helpers.sessao_spark import get_spark_session
 from helpers.paths import bronze_path
+from pyspark.sql.functions import current_timestamp
 
 
 def run_bronze_etl():
+    
+    spark = get_spark_session("BronzeETL")
+
     # 1. Extrai os dados da API paginada
     base_url = "https://api.openbrewerydb.org/v1/breweries"
     all_data = []
@@ -14,7 +17,7 @@ def run_bronze_etl():
     per_page = 50
 
     #while True:
-    while page <10: ############################# retirar após o teste
+    while page < 10:
         response = requests.get(base_url, params={"page": page, "per_page": per_page})
         if response.status_code != 200:
             print(f"Erro na página {page}: {response.status_code}")
@@ -31,9 +34,6 @@ def run_bronze_etl():
     if not all_data:
         print("Nenhum dado extraído da API.")
         return
-
-    # 2. Inicializa sessão Spark
-    spark = get_spark_session("BronzeETL")
 
     # 3. Define o schema
     schema = StructType([
@@ -55,27 +55,18 @@ def run_bronze_etl():
         StructField("street", StringType(), True)
     ])
 
-    # 4. Valida se todos os campos esperados estão presentes
-    first_record_keys = set(all_data[0].keys())
-    expected_keys = set(schema.fieldNames())
-    if not expected_keys.issubset(first_record_keys):
-        raise ValueError("Mudança no schema da API detectada!")
-
-    # 5. Cria DataFrame
     df = spark.createDataFrame(all_data, schema=schema)
-
-    # 6. Adiciona timestamps
-    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    df = df.withColumn("line_created_at", to_timestamp(lit(now_str))) \
-            .withColumn("line_updated_at", to_timestamp(lit(now_str)))
+    df = df.withColumn("line_created_at", current_timestamp()) \
+        .withColumn("line_updated_at", current_timestamp())
 
     # 7. Grava no Delta com CDF habilitado
+    df = df.coalesce(1)
     df.write.format("delta") \
         .option("mergeSchema", "true") \
         .option("delta.enableChangeDataFeed", "true") \
-        .mode("append") \
+        .mode("overwrite") \
         .save(bronze_path)
-
+    
     print(f"✅ Dados gravados com CDF em: {bronze_path}")
     spark.stop()
 

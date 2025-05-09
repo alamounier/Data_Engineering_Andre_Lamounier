@@ -4,3 +4,4 @@ logs/
 Airflow/logs/
 Airflow/config/
 Airflow/plugins/
+src/tests/

@@ -1,67 +1,59 @@
 from helpers.sessao_spark import get_spark_session
-from helpers.paths import bronze_path, silver_path, control_path 
+from helpers.paths import bronze_path, silver_path 
 from delta.tables import DeltaTable
-from pyspark.sql.functions import col, lower, current_timestamp, max as spark_max
-from datetime import datetime
-from pyspark.sql import Row
-
-def get_last_processed_version(spark):
-    try:
-        df = spark.read.format("delta").load(control_path)
-        return df.agg(spark_max("version")).first()[0] or -1
-    except:
-        return -1
-
-def save_last_processed_version(spark, version):
-    df = spark.createDataFrame([Row(version=version, timestamp=datetime.now())])
-    df.write.format("delta").mode("append").save(control_path)
+from pyspark.sql.functions import col, current_timestamp
+from pyspark.sql.functions import col, length
+from pyspark.sql.functions import col, length
+from pyspark.sql.functions import coalesce, lit
+import os
+import shutil
 
 def run_silver_etl():
     spark = get_spark_session("SilverLayer")
 
     # Tabela Delta da Bronze
     bronze_table = DeltaTable.forPath(spark, bronze_path)
-    latest_version = bronze_table.history(1).select("version").first()["version"]
-    last_processed = get_last_processed_version(spark)
+    df_bronze = spark.read.format("delta").option("versionAsOf", 0).load(bronze_path)
 
-    if latest_version == last_processed:
-        print("Nenhuma nova mudança na Bronze.")
-        spark.stop()
-        return
 
-    # Leitura apenas das mudanças via CDF
-    df_changes = spark.read.format("delta") \
-        .option("readChangeData", "true") \
-        .option("startingVersion", last_processed + 1) \
-        .option("endingVersion", latest_version) \
-        .load(bronze_path)
+    # Cria o DataFrame da camada Silver
+    df_silver = df_bronze.select(
+        "id", "name", "brewery_type", "address_1", "address_2", "address_3", 
+        "city", "state_province", "postal_code", "country", 
+        "longitude", "latitude", "phone", "website_url", 
+        "state", "street"
+    )
+    
+    # Valida dados inválidos
+    invalid_records = df_silver.filter(
+        (col("id").isNull()) | (length(col("id")) <= 1) |
+        (col("name").isNull()) | (length(col("name")) <= 1)
+    )
 
-    df_changes = df_changes.filter(col("_change_type").isin("insert", "update_postimage"))
+    if invalid_records.count() > 0:
+        raise ValueError("Dados inválidos detectados: existem registros com 'id' "
+                         "ou 'name' nulos ou com 1 caractere ou menos.")
+    
+    #para o particionamento, lidando com nulls
+    df_silver = df_silver.withColumn("country", coalesce(col("country"), lit("unknown")))
+    df_silver = df_silver.withColumn("state", coalesce(col("state"), lit("unknown")))
+    df_silver = df_silver.withColumn("city", coalesce(col("city"), lit("unknown")))
 
-    if df_changes.rdd.isEmpty():
-        print("Nenhum dado relevante para processar.")
-        spark.stop()
-        return
+    # Adiciona timestamp
+    df_silver = df_silver.withColumn("silver_created_at", current_timestamp())
 
-    # Transformações
-    df_silver = df_changes.select(
-        "id", "name", "brewery_type", "city", "state", "country",
-        "longitude", "latitude", "phone", "website_url",
-        "line_created_at", "line_updated_at"
-    ).dropna(subset=["id", "name", "brewery_type", "state", "city"])
+    # Excluir a pasta silver caso exista (alternativa para overwrite local)
+    if os.path.exists(silver_path): 
+        shutil.rmtree(silver_path) 
 
-    df_silver = df_silver.withColumn("city", lower(col("city"))) \
-                            .withColumn("state", lower(col("state"))) \
-                            .withColumn("country", lower(col("country"))) \
-                            .withColumn("silver_loaded_at", current_timestamp())
-
+    # Escreve a tabela Silver particionada
     df_silver.write.format("delta") \
-        .mode("append") \
+        .mode("overwrite") \
+        .option("mergeSchema", "true") \
         .partitionBy("country", "state", "city") \
         .save(silver_path)
 
-    save_last_processed_version(spark, latest_version)
-    print(f"Silver atualizado com mudanças da versão {last_processed + 1} até {latest_version}")
+    print(f"✅ Dados gravados com CDF em: {silver_path}")
     spark.stop()
 
 run_silver_etl()

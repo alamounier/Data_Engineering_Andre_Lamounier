@@ -26,4 +26,40 @@ A arquitetura é dividida em três camadas:
 
 ## 📁 Estrutura do Projeto
 
+meu-projeto/
+├── Airflow/
+│   └── dags/
+├── src/
+│   ├── helpers/
+│   ├── jars/
+│   ├── outputs/
+│   ├── layer_bronze.py
+│   ├── layer_silver.py
+│   └── layer_gold.py
+├── Dockerfile
+└── requirements.txt
 
+## 📁 Como executar
+
+1. Suba os serviços com Docker Compose
+Execute o seguinte comando na raiz do projeto (onde está localizado o docker-compose.yml):
+
+- docker-compose up -d
+
+2. Acesse a interface do Airflow
+Abra seu navegador e vá para: http://localhost:8080
+Use as credenciais padrão:
+
+- Usuário: airflow
+- Senha: airflow
+
+3. Ative e execute a DAG
+Na interface do Airflow:
+
+- Localize a DAG chamada brewery_etl_dag.
+- Habilite a DAG clicando no botão "On/Off".
+- Em seguida, clique em Trigger DAG (botão de play) para iniciar o pipeline.
+
+4. Monitore as execuções
+Acompanhe o progresso e visualize os logs diretamente na interface do Airflow, clicando em cada task da DAG.
+Os resultados processados serão salvos na pasta src/outputs.

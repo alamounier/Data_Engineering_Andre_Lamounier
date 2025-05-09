@@ -47,16 +47,16 @@ Siga os passos abaixo para rodar este projeto:
 
 3. Acesse a pasta src/jars, baixe o conector do PySpark no seguinte link: aws-java-sdk-bundle-1.11.1026.jar, e salve o arquivo nessa mesma pasta. Depois, retorne à pasta raiz do projeto no terminal.
 
-4. Crie a imagem do container do PySpark executando o seguinte comando: docker build -t pyspark_image .
+4. Crie a imagem do container do PySpark executando o seguinte comando: **docker build -t pyspark_image .**
 
-5. Aguarde a execução do passo 4 e em seguida acesse a pasta Airflow/dags/ e abra o arquivo brewery_etl_dag.py e altere todas os "sources" dos parâmetros Mount das taks, conforme abaixo:
+5. Aguarde a execução do passo 4 e em seguida navegue até a pasta Airflow/dags/ e abra o arquivo brewery_etl_dag.py e altere todas os "sources" dos parâmetros Mount das taks, conforme abaixo:
     
     - De: source=r"C:\Users\andre-lamounier\Desktop\airflow-docker\meu-projeto\src\outputs"
     - Para: source=r"[caminho da sua pasta outputs]"
     
     **Observação:** Se você utilizar a barra invertida \ no caminho do arquivo, adicione o r antes da string com o caminho. Caso utilize a barra normal /, basta remover o r.
 
-6. Navegue até a pasta do Airflow no terminal, aguarde a execução do container do PySpark e, em seguida, crie o container do Airflow com o seguinte comando: docker-compose up -d
+6. Agora, acesse a pasta Airflow no terminal e, em seguida, crie o container do Airflow com o seguinte comando: **docker-compose up -d**
 
 
 ## 🧠 Lógica

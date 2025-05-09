@@ -26,7 +26,7 @@ A arquitetura é dividida em três camadas:
 
 ## 📁 Estrutura do Projeto
 
-<img src="/imgs_png/estrutura_projeto.png" alt="python" height="50" /> 
+<img src="/imgs_png/estrutura_projeto.png" alt="python" height="600" /> 
 
 ## 📁 Como executar
 

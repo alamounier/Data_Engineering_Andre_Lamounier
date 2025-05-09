@@ -89,6 +89,6 @@ This architectural model strikes a balance between full history control (in the 
 
 ## 📌 Results
 
-Below are some analyses on the Gold layer:
+- Below are some analyses on the Gold layer:
 
 <img src="/imgs_png/resultados.png" alt="python" height="400" /> 

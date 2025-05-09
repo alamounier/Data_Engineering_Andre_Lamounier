@@ -26,18 +26,7 @@ A arquitetura é dividida em três camadas:
 
 ## 📁 Estrutura do Projeto
 
-meu-projeto/
-├── Airflow/
-│   └── dags/
-├── src/
-│   ├── helpers/
-│   ├── jars/
-│   ├── outputs/
-│   ├── layer_bronze.py
-│   ├── layer_silver.py
-│   └── layer_gold.py
-├── Dockerfile
-└── requirements.txt
+<img src="/imgs_png/estrutura_projeto.png" alt="python" height="50" /> 
 
 ## 📁 Como executar
 

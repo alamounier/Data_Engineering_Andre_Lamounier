@@ -2,8 +2,9 @@ import requests
 from datetime import datetime
 from pyspark.sql.types import StructType, StructField, StringType, DoubleType
 from pyspark.sql.functions import lit, to_timestamp
-from etl_layers.utils import get_spark_session
-from etl_layers.paths import bronze_path
+from helpers.sessao_spark import get_spark_session
+from helpers.paths import bronze_path
+
 
 def run_bronze_etl():
     # 1. Extrai os dados da API paginada
@@ -12,7 +13,8 @@ def run_bronze_etl():
     page = 1
     per_page = 50
 
-    while True:
+    #while True:
+    while page <10: ############################# retirar após o teste
         response = requests.get(base_url, params={"page": page, "per_page": per_page})
         if response.status_code != 200:
             print(f"Erro na página {page}: {response.status_code}")
@@ -65,7 +67,7 @@ def run_bronze_etl():
     # 6. Adiciona timestamps
     now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     df = df.withColumn("line_created_at", to_timestamp(lit(now_str))) \
-           .withColumn("line_updated_at", to_timestamp(lit(now_str)))
+            .withColumn("line_updated_at", to_timestamp(lit(now_str)))
 
     # 7. Grava no Delta com CDF habilitado
     df.write.format("delta") \
@@ -76,3 +78,5 @@ def run_bronze_etl():
 
     print(f"✅ Dados gravados com CDF em: {bronze_path}")
     spark.stop()
+
+run_bronze_etl()

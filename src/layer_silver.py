@@ -1,5 +1,5 @@
-from etl_layers.utils import get_spark_session
-from etl_layers.paths import bronze_path, silver_path, control_path  # mova control_path para paths.py
+from helpers.sessao_spark import get_spark_session
+from helpers.paths import bronze_path, silver_path, control_path 
 from delta.tables import DeltaTable
 from pyspark.sql.functions import col, lower, current_timestamp, max as spark_max
 from datetime import datetime
@@ -51,9 +51,9 @@ def run_silver_etl():
     ).dropna(subset=["id", "name", "brewery_type", "state", "city"])
 
     df_silver = df_silver.withColumn("city", lower(col("city"))) \
-                         .withColumn("state", lower(col("state"))) \
-                         .withColumn("country", lower(col("country"))) \
-                         .withColumn("silver_loaded_at", current_timestamp())
+                            .withColumn("state", lower(col("state"))) \
+                            .withColumn("country", lower(col("country"))) \
+                            .withColumn("silver_loaded_at", current_timestamp())
 
     df_silver.write.format("delta") \
         .mode("append") \
@@ -63,3 +63,5 @@ def run_silver_etl():
     save_last_processed_version(spark, latest_version)
     print(f"Silver atualizado com mudanças da versão {last_processed + 1} até {latest_version}")
     spark.stop()
+
+run_silver_etl()

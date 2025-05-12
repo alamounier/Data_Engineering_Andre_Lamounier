@@ -66,15 +66,33 @@ Follow the steps below to run this project:
 
 The objective of this pipeline is to leverage the Delta engine and Medallion architecture to ensure efficient processing while maintaining control over the data history and the most recent version for analysis.
 
-- **Bronze Layer**: Stores raw data from the sources, keeping all versions of the records. By using the Change Data Feed (CDF), any changes to the data over time can be tracked. This provides a complete history of all modifications made to the input data.
+**🥉 Bronze Layer**
+This layer stores raw data from the sources, preserving all historical versions of the records using Delta Change Data Feed (CDF). Additionally, the schema is explicitly defined during DataFrame creation, and the .write() step does not allow schema evolution. If new columns are added at the source level, the process fails explicitly, providing developers full control and visibility over changes in the structure. This avoids silent schema drift and enforces strong contracts for data ingestion.
 
-- **Silver Layer**: In this layer, the pipeline processes and transforms the data into a more analysis-friendly format. The Silver layer table will be overwritten with each execution, ensuring that only the latest version of the data is retained, thus saving processing resources. There is no need to store the complete history of changes, as the Bronze layer already preserves this information.
+✅ Benefits:
+- Full data history with versioning (Delta + CDF).
+- Schema enforcement with validation — raises an error on unexpected fields.
+- Adds technical columns like line_created_at and line_updated_at for traceability.
 
-- **Gold Layer**: The Gold layer will represent the aggregated table from the Silver layer, ideal for building dashboards and reports for the business area.
+**🥈 Silver Layer**
+In this layer, the data is cleaned, transformed, and made more analysis-friendly. The Silver table is overwritten on each execution, retaining only the latest version of each record, which reduces storage costs and improves performance. However, additional data quality controls are applied:
 
-**Versioning Advantage**: If there is a need to recover previous versions of the data or perform auditing, the Bronze layer, with Delta versioning, offers this flexibility. The Silver layer focuses only on the latest version, which makes analysis easier and enhances performance.
+- Validates critical fields such as id and name, raising errors for nulls or invalid values.
+- Replaces nulls in partitioning fields (country, state, city) with "unknown" to prevent partitioning issues.
+- Duplicates and invalid rows are filtered out to ensure high-quality output for downstream consumers.
 
-This architectural model strikes a balance between full history control (in the Bronze layer) and processing efficiency (in the Silver layer), optimizing resources while maintaining flexibility for future adjustments or audits.
+✅ Benefits:
+- Enforced data quality rules before data is made available for consumption.
+- Maintains clean, deduplicated data optimized for analysis and partitioned for performance.
+- Errors raised during validation allow early detection of data anomalies.
+
+**🥇 Gold Layer**
+The Gold layer aggregates the clean data from Silver, producing curated tables for dashboards and business reports. This layer focuses on usability and performance, delivering business metrics and KPIs.
+
+**Versioning Advantage**
+If there's a need to recover previous versions or perform audits, the Bronze layer offers full history through Delta versioning and CDF. The Silver layer focuses on delivering only the latest valid version, reducing complexity and storage costs while ensuring analytical efficiency.
+
+
 
 ---
 

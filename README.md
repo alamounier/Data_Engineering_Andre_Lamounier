@@ -69,7 +69,7 @@ The objective of this pipeline is to leverage the Delta engine and Medallion arc
 **🥉 Bronze Layer**
 This layer stores raw data from the sources, preserving all historical versions of the records using Delta Change Data Feed (CDF). Additionally, the schema is explicitly defined during DataFrame creation, and the .write() step does not allow schema evolution. If new columns are added at the source level, the process fails explicitly, providing developers full control and visibility over changes in the structure. This avoids silent schema drift and enforces strong contracts for data ingestion.
 
-✅ Benefits:
+Benefits:
 - Full data history with versioning (Delta + CDF).
 - Schema enforcement with validation — raises an error on unexpected fields.
 - Adds technical columns like line_created_at and line_updated_at for traceability.
@@ -79,9 +79,8 @@ In this layer, the data is cleaned, transformed, and made more analysis-friendly
 
 - Validates critical fields such as id and name, raising errors for nulls or invalid values.
 - Replaces nulls in partitioning fields (country, state, city) with "unknown" to prevent partitioning issues.
-- Duplicates and invalid rows are filtered out to ensure high-quality output for downstream consumers.
 
-✅ Benefits:
+Benefits:
 - Enforced data quality rules before data is made available for consumption.
 - Maintains clean, deduplicated data optimized for analysis and partitioned for performance.
 - Errors raised during validation allow early detection of data anomalies.
